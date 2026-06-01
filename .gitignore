@@ -1,2 +1,4 @@
 # Полный (внутренний) мануал — не для публикации
 full_guide.md
+server_diag.sh
+.gitignore
