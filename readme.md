@@ -69,6 +69,7 @@
 ### Бонус
 
 - [Маскировка сервера под обычный хостинг](#бонус-маскировка-сервера-под-обычный-хостинг)
+- [Nginx reverse proxy (сайт + WS на одном сервере)](#вариант-b--nginx-как-reverse-proxy-оба-на-одном-сервере)
 
 ---
 
@@ -863,7 +864,56 @@ x-ui reset       # сбросить на дефолт
 
 VLESS Reality при этом работает на своём случайном порту — никак не конфликтует с nginx.
 
-> **Планируете WebSocket на этом сервере (Часть 3)?** nginx и WS-inbound **не могут** слушать один порт 443. Маскировку nginx делайте на **exit-ноде**, WebSocket — на **bridge-ноде**. Тогда конфликта не будет.
+> **Планируете WebSocket на этом сервере (Часть 3)?** По умолчанию nginx и WS-inbound **не могут** слушать один порт 443. Есть два решения:
+
+#### Вариант A — Разнести по серверам (рекомендуется)
+
+Маскировку nginx делайте на **exit-ноде**, WebSocket — на **bridge-ноде**. Тогда конфликта не будет:
+
+```
+Exit (Амстердам):  nginx:443 (фейковый сайт) + VLESS Reality на случайном порту
+Bridge (Москва):   WS+TLS на 443 (без nginx)
+```
+
+#### Вариант B — nginx как reverse proxy (оба на одном сервере)
+
+Если хотите сайт и WebSocket VPN на одном сервере — настройте nginx как reverse proxy. Nginx будет на 443, а xray WS слушает на внутреннем порту:
+
+```
+Клиент → nginx:443 (TLS)
+              │
+              ├── /               → фейковый сайт (HTML)
+              └── /SecretPath123  → proxy_pass → xray (127.0.0.1:8443)
+```
+
+Снаружи выглядит как обычный HTTPS-сайт. Только запросы по секретному пути попадают в VPN.
+
+**Настройка:** после получения SSL-сертификата (шаг 5), добавьте в конфиг nginx (`/etc/nginx/sites-enabled/default`) внутри блока `server` с SSL:
+
+```nginx
+# Внутри блока server { listen 443 ssl; ... }
+
+# Проксирование WebSocket в xray
+location /ВашСекретныйПуть {
+    proxy_redirect off;
+    proxy_pass http://127.0.0.1:8443;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+
+Затем перезагрузите nginx:
+
+```bash
+nginx -t && systemctl reload nginx
+```
+
+> **Важно:** в этом варианте WS-inbound в 3X-UI должен слушать на `127.0.0.1:8443` **без TLS** (security: none). TLS уже обработал nginx. В ссылке для клиента используйте `security=tls`, `sni=ваш-домен.ru` и порт `443` — клиент подключается к nginx, а не напрямую к xray.
+
 
 ### Шаг 1. Регистрация домена
 
