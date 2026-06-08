@@ -4,5 +4,8 @@ server_diag.sh
 .gitignore
 
 # Скрипт деплоя и credentials — содержат секреты
-deploy_vpn_pair.sh
 credentials_*.txt
+*.py
+#
+deploy_vpn_pair*
+*.sh
