@@ -1,11 +1,15 @@
 # Полный (внутренний) мануал — не для публикации
 full_guide.md
+readme_internal.md
 server_diag.sh
 .gitignore
 
 # Скрипт деплоя и credentials — содержат секреты
-credentials_*.txt
+*.txt
 *.py
-#
-deploy_vpn_pair*
 *.sh
+*.bak*
+*.json
+*.md
+*.dump
+camouflage
