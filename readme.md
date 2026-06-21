@@ -119,7 +119,7 @@
 
 **Telegram:** [@itzmelkiy_pm](https://t.me/itzmelkiy_pm) · 
 
-Если гайд оказался полезен — буду рад поддержке: [donationalerts.com/r/itzmelkiy](https://www.donationalerts.com/r/itzmelkiy)
+Если гайд оказался полезен — буду рад поддержке: [donationalerts.com/r/n0body_sh](https://www.donationalerts.com/r/n0body_sh)
 
 ---
 
